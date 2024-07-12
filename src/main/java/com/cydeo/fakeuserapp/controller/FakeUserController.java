@@ -22,9 +22,4 @@ public class FakeUserController {
         return ResponseEntity.ok(fakeUserService.getRandomName());
     }
 
-    @GetMapping("/with-db/random")
-    public ResponseEntity<String> getNameDromDB() {
-        return ResponseEntity.ok(fakeUserService.getNameFromDB());
-    }
-
 }

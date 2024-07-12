@@ -1,0 +1,27 @@
+Amazon Web Services
+    - EC2: Elastic Compute Cloud - Server
+    - RDS: Relational Database Service -  Database
+    - ECR: Elastic Container Registry - post docker
+
+    - Manlual deployment to EC2
+
+Docker
+    - Create an image
+    - Push an image to a repository
+    - Pull an image
+    - Run image in a container
+    - Manual deployment to EC2 with Docker
+
+CircleCI
+    - CircleCI setup
+    - Automated deployment
+
+----------------------------------------------------------------------
+1. Create EC2
+1.1. go to aws.com > *create account VR/InfoWar3! > Sign in to the Console
+1.2. in console > search for ec2 > Launch instance
+        > Name: fake-user-app > ubuntu
+        > Key pair > Create new key pair > name: fake-user-app-key > click Create key pair
+        > click on Launch Instance > Instances
+            > select instance and click Connect > click Connect - will open terminal window.
+            > *create fake-user-app for the application
