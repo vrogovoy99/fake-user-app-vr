@@ -4,5 +4,6 @@ public interface FakeUserService {
 
     String getRandomName();
 
+    String getNameFromDB();
 
 }

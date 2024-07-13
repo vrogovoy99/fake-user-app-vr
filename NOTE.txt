@@ -68,5 +68,23 @@ Alternative:
         lsof -i tcp:8080            - list jobs that run on tcp:8080 port displays PID
         kill -9 [PID]               - stops application with given PID
 
+5. Create RDS database and connect to it from application.
+5.1. in aws search for RDS (Relational Database Service) > DB Instances > Create Database
+        -   Standard create
+        -   PostgreSQL
+        -   Free tier
+        -   DB instance identifier: fake-user-app
+        -   Master username:   postgres
+        -   Password:   Cydeo123.
+        -   Additional configuration
+            -   Initial database name: fake_user_app
+        -   Click create
 
+5.2. Configure database connection
+5.2.1. on RDS portal > Databases > click on database name
+5.2.2. Endpoint & port
+    copy Endpoint and paste it in application.configuration spring.datasource.url replacing localhost:
+        spring.datasource.url=jdbc:postgresql://fake-user-app.ctkkcki2gb3i.us-east-2.rds.amazonaws.com:5432/school-lab
+    make sure that the port in applicaiotn.configuration file is the same as in RDS portal 5432 (default)
+    replace database name in spring.datasource.url with DB name: fake_user_app (can be found in RDS > database > Configuration tab)
 
