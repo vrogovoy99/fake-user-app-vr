@@ -25,3 +25,48 @@ CircleCI
         > click on Launch Instance > Instances
             > select instance and click Connect > click Connect - will open terminal window.
             > *create fake-user-app for the application
+
+2. Create JAR file
+2.1. InteliJ >Terminal> mvn package (Ctrl + Enter to run IDE feature)-> will generate jar and store it in target folder
+Alternative:
+    click on Maven Icon (right top InteliJ) > M(app-name) > Lifecycle > package (or install) / clean to remove target folder
+
+3. upload JAR to EC2
+3.1. open terminal and go to C:\Users\Human\Downloads (EC2 fake-user-app-key.pem is in downloads folder)
+3.2. copy command from EC2 > Instances > select app and click Connect > SSH client > item 3. Run this command
+    Open Git Bash > cd Downl* > chmod 400 fake-user-app-key.pem
+3.3. run the upload command
+
+    scp -1 "[key.pem]" [jar location] ubuntu@[EC2 server]:[target destination]
+
+        [key.pem] - fake-user-app-key.pem in Downloads folder
+        [jar location] - InteliJ > Project > target > .jar > Copy Path > Absolute
+        [EC2 server] 3.2. step 4 - Public DNS: ec2-3-135-62-25.us-east-2.compute.amazonaws.com
+        [target destination] : /home/ubuntu/fake-user-app
+
+    scp -i "fake-user-app-key.pem" /c/Users/Human/IdeaProjects/spring/fake-user-app/fake-user-app-vr/target/fake-user-app-0.0.1-SNAPSHOT.jar ubuntu@ec2-3-135-62-25.us-east-2.compute.amazonaws.com:/home/ubuntu/fake-user-app
+
+3.4. go to aws terminal (Instances / connect / EC2 Instance Connect / Connect)
+    confirm that file was uploaded to fake-user-app folder.
+
+4. Deploy and run application on aws server
+4.1. on the first run(*) install java:
+    sudo apt update                                 - (*)to install the packages
+    sudo apt install default-jre                    - (*)install java run environment
+4.2. on the first run enable port 8080
+4.2.1. aws console > instances > select instance > security tab > click on Security Groups link
+4.2.2. click on Edit inbound rules > Add Rule > Port range: 8080 > Source: Anywhere-IPv4 > Save rules
+
+4.3. install application
+    java -jar fake-user-app-0.0.1-SNAPSHOT.jar      - install my application
+    you should be able to access Public IP:8080 via browser
+
+4.4. run application on background using nohup
+    nohup java -jar fake-user-app-0.0.1-SNAPSHOT.jar
+    NOTE: logs will be written in app directory (fake-user-app) in nohup.out file and can be reached via aws terminal.
+    nohup execution control commands:
+        lsof -i tcp:8080            - list jobs that run on tcp:8080 port displays PID
+        kill -9 [PID]               - stops application with given PID
+
+
+
