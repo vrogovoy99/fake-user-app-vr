@@ -1,4 +1,5 @@
-Amazon Web Services
+__________________________________________________________________________
+AWS Amazon Web Services
     - EC2: Elastic Compute Cloud - Server
     - RDS: Relational Database Service -  Database
     - ECR: Elastic Container Registry - post docker
@@ -17,6 +18,12 @@ CircleCI
     - Automated deployment
 
 ----------------------------------------------------------------------
+
+    AWS
+
+__________________________________________________________________________
+
+
 1. Create EC2
 1.1. go to aws.com > *create account VR/InfoWar3! > Sign in to the Console
 1.2. in console > search for ec2 > Launch instance
@@ -87,4 +94,34 @@ Alternative:
         spring.datasource.url=jdbc:postgresql://fake-user-app.ctkkcki2gb3i.us-east-2.rds.amazonaws.com:5432/school-lab
     make sure that the port in applicaiotn.configuration file is the same as in RDS portal 5432 (default)
     replace database name in spring.datasource.url with DB name: fake_user_app (can be found in RDS > database > Configuration tab)
+5.2.3. Configure access to database from EC2
+    RDS portal > Databases > click on your database name > Connected compute resources section > Set up EC2 connection
+    -   select your app EC2 > Continue > Set up
 
+6. Redeploy application
+6.1. delete jar file on EC2 via terminal
+6.2. InteliJ terminal (use Ctrl+Enter):
+        mvn clean
+        mvn install -DskipTests      -   not to run tests, since app is configured to run on server only
+6.3. copy jar to EC2 repeating step 3.3.
+     scp -i "fake-user-app-key.pem" /c/Users/Human/IdeaProjects/spring/fake-user-app/fake-user-app-vr/target/fake-user-app-0.0.1-SNAPSHOT.jar ubuntu@ec2-3-135-62-25.us-east-2.compute.amazonaws.com:/home/ubuntu/fake-user-app
+6.4. run application on EC2 server terminal: java -jar fake-user-app-0.0.1-SNAPSHOT.jar
+
+__________________________________________________________________________
+
+    DOCKER
+
+__________________________________________________________________________
+                                Download and install Docker from https://www.docker.com/
+a. https://hub.docker.com/      - library of docker images and search for hello-world
+                                in cmd window while docker app is running
+b. docker pull hello-world      - download image
+c. docker run hello-world       - run image
+d. docker image ls              - list downloaded images
+   docker images                - list downloaded images
+e. docker rmi [image id]        - delete image / image id from docker images
+f. docker ps -a                 - list containers
+g. docker logs [container id]   - container id can be found in list of containers / contained id can be partial, like 9 instead of 923739813498
+h. docker rm [container id]     - delete container
+   docker rm -f a [container id]- force remove container (while it's running)
+i. docker stop [container id]   - stop execution of the container
