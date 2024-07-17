@@ -1,4 +1,5 @@
-Amazon Web Services
+__________________________________________________________________________
+AWS Amazon Web Services
     - EC2: Elastic Compute Cloud - Server
     - RDS: Relational Database Service -  Database
     - ECR: Elastic Container Registry - post docker
@@ -17,6 +18,12 @@ CircleCI
     - Automated deployment
 
 ----------------------------------------------------------------------
+
+    AWS
+
+__________________________________________________________________________
+
+
 1. Create EC2
 1.1. go to aws.com > *create account VR/InfoWar3! > Sign in to the Console
 1.2. in console > search for ec2 > Launch instance
@@ -28,6 +35,7 @@ CircleCI
 
 2. Create JAR file
 2.1. InteliJ >Terminal> mvn package (Ctrl + Enter to run IDE feature)-> will generate jar and store it in target folder
+    mvn install -DskipTests -> builds jar without testing app
 Alternative:
     click on Maven Icon (right top InteliJ) > M(app-name) > Lifecycle > package (or install) / clean to remove target folder
 
@@ -35,7 +43,7 @@ Alternative:
 3.1. open terminal and go to C:\Users\Human\Downloads (EC2 fake-user-app-key.pem is in downloads folder)
 3.2. copy command from EC2 > Instances > select app and click Connect > SSH client > item 3. Run this command
     Open Git Bash > cd Downl* > chmod 400 fake-user-app-key.pem
-3.3. run the upload command
+3.3. run the upload command from download (where pem file is) using GitBash
 
     scp -1 "[key.pem]" [jar location] ubuntu@[EC2 server]:[target destination]
 
@@ -58,7 +66,7 @@ Alternative:
 4.2.2. click on Edit inbound rules > Add Rule > Port range: 8080 > Source: Anywhere-IPv4 > Save rules
 
 4.3. install application
-    java -jar fake-user-app-0.0.1-SNAPSHOT.jar      - install my application
+    java -jar fake-user-app-0.0.1-SNAPSHOT.jar      - install my application in EC2 console
     you should be able to access Public IP:8080 via browser
 
 4.4. run application on background using nohup
@@ -68,5 +76,110 @@ Alternative:
         lsof -i tcp:8080            - list jobs that run on tcp:8080 port displays PID
         kill -9 [PID]               - stops application with given PID
 
+5. Create RDS database and connect to it from application.
+5.1. in aws search for RDS (Relational Database Service) > DB Instances > Create Database
+        -   Standard create
+        -   PostgreSQL
+        -   Free tier
+        -   DB instance identifier: fake-user-app
+        -   Master username:   postgres
+        -   Password:   Cydeo123.
+        -   Additional configuration
+            -   Initial database name: fake_user_app
+        -   Click create
 
+5.2. Configure database connection
+5.2.1. on RDS portal > Databases > click on database name
+5.2.2. Endpoint & port
+    copy Endpoint and paste it in application.configuration spring.datasource.url replacing localhost:
+        spring.datasource.url=jdbc:postgresql://fake-user-app.ctkkcki2gb3i.us-east-2.rds.amazonaws.com:5432/school-lab
+    make sure that the port in applicaiotn.configuration file is the same as in RDS portal 5432 (default)
+    replace database name in spring.datasource.url with DB name: fake_user_app (can be found in RDS > database > Configuration tab)
+5.2.3. Configure access to database from EC2
+    RDS portal > Databases > click on your database name > Connected compute resources section > Set up EC2 connection
+    -   select your app EC2 > Continue > Set up
+
+6. Redeploy application
+6.1. delete jar file on EC2 via terminal
+6.2. InteliJ terminal (use Ctrl+Enter):
+        mvn clean
+        mvn install -DskipTests      -   not to run tests, since app is configured to run on server only
+6.3. copy jar to EC2 repeating step 3.3.
+     scp -i "fake-user-app-key.pem" /c/Users/Human/IdeaProjects/spring/fake-user-app/fake-user-app-vr/target/fake-user-app-0.0.1-SNAPSHOT.jar ubuntu@ec2-3-135-62-25.us-east-2.compute.amazonaws.com:/home/ubuntu/fake-user-app
+6.4. run application on EC2 server terminal: java -jar fake-user-app-0.0.1-SNAPSHOT.jar
+
+__________________________________________________________________________
+
+    DOCKER
+
+__________________________________________________________________________
+https://hub.docker.com/
+vrogovoy99/HelloDocker
+                                Download and install Docker from https://www.docker.com/
+a. https://hub.docker.com/      - library of docker images and search for hello-world
+                                in cmd window while docker app is running
+b. docker pull hello-world      - download image
+   docker pull hello-world:linux - linux is a tag/version of the code
+c. docker run hello-world       - run image
+d. docker image ls              - list downloaded images
+   docker images                - list downloaded images
+e. docker rmi [image id]        - delete image / image id from docker images
+f. docker ps -a                 - list containers
+g. docker logs [container id]   - container id can be found in list of containers / contained id can be partial, like 9 instead of 923739813498
+h. docker rm [container id]     - delete container
+   docker rm -f a [container id]- force remove container (while it's running)
+i. docker stop [container id]   - stop execution of the container
+
+1. Create Docker package
+1.1. Create Dockerfile in application root:
+        FROM adoptopenjdk/openjdk11:jre
+                adoptopenjdk    - package creator
+                openjdk11       - image name
+                openjdk:17.0.1
+                jre             - tag (we need only runtime environment and it comes with OS)
+        FROM ubuntu             - add OS if it is not part of other included packages
+        WORKDIR usr/app         - creates usr/app folder and cd into it
+        COPY target/fake-user-app-0.0.1-SNAPSHOT.jar fake-user-app-0.0.1-SNAPSHOT.jar
+                target          - target folder, since dockerfile is in app root
+                fake-user-app-0.0.1-SNAPSHOT.jar - compiled app / destination file name
+        ENTRYPOINT ["java", "-jar", "fake-user-app-0.0.1-SNAPSHOT.jar"] - run command up on container initialization
+1.2. Build local Docker Image
+1.2.1. cd to root application (or use InteliJ terminal
+1.2.2. docker build -t fake-user-app:latest .
+            fake-user-app       - image name
+            latest              - image tag
+            .                   - location of dockerfile (. stands for root)
+2. Publish Docker Image on DockerHub
+2.1. Login to DockerHub
+2.1.1. Via website: https://hub.docker.com/
+2.1.2. Via terminal:
+                docker login --username vrogovoy99 --password HelloDocker
+                docker login --username vrogovoy99 --password-stdin
+                cat mypassword.txt | docker login --username vrogovoy99 --password-stdin
+                docker logout
+2.2. Create image repository on DockerHub
+        https://hub.docker.com/ > Create repository > give Repository name, short description > Create
+            image repository vrogovoy99/fake-user-app crated
+2.3. Rename local image to have same name as DockerHub Image
+        docker tag fake-user-app:latest vrogovoy99/fake-user-app:v1
+            fake-user-app:latest            - local image name tag
+            vrogovoy99/fake-user-app:v1     - to be renamed to match DockerHub image
+2.4. Push created image to DockerHub. The command is generated on DockerHub web site > repositories
+        docker push vrogovoy99/fake-user-app:v1
+3. Daploy Docker image on EC2
+3.1. login to EC2 terminal
+3.2. make sure nothing is running on port 8080: lsof -i tcp:8080
+3.3. *Install Docker (one time install)
+3.3.1 go to https://docs.docker.com/engine/install/ubuntu/ and copy setup Docker code
+            # Add Docker's official GPG key:....
+        run that code in EC2 terminal
+3.3.2. On the same Docker page  and copy Install the Docker package codeRe
+            sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+        run that code in EC2 terminal
+3.3.3. to test successful installation run
+            sudo docker run hello-world
+3.4. deploy docker image using command line
+        sudo docker run --name fake-user-app-container vrogovoy99/fake-user-app:v1
+        (to get needed permissions run : sudo su )
+        sudo docker pull vrogovoy99/fake-user-app:v1
 
