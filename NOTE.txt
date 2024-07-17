@@ -179,7 +179,7 @@ i. docker stop [container id]   - stop execution of the container
 3.3.3. to test successful installation run
             sudo docker run hello-world
 3.4. deploy docker image using command line
-        sudo docker run --name fake-user-app-container vrogovoy99/fake-user-app:v1
+        sudo docker run --name fake-user-app-container -p 8080:8080 vrogovoy99/fake-user-app:v1
         (to get needed permissions run : sudo su )
         sudo docker pull vrogovoy99/fake-user-app:v1
 
