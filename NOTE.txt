@@ -166,6 +166,18 @@ i. docker stop [container id]   - stop execution of the container
             vrogovoy99/fake-user-app:v1     - to be renamed to match DockerHub image
 2.4. Push created image to DockerHub. The command is generated on DockerHub web site > repositories
         docker push vrogovoy99/fake-user-app:v1
+2.5. alternative way to build image directly from GitHub using AWS server
+2.5.1. GitHub public repository.
+2.5.1.1. Generate jar file in InteliJ, commit it to Git
+2.5.1.2. In AWS terminal run
+
+        sudo docker build -t vrogovoy99/fake-user-app:from-git https://github.com/vrogovoy99/fake-user-app-vr.git#3.docker
+             vrogovoy99/fake-user-app:from-git                      -   Image and tag name to be created
+             https://github.com/vrogovoy99/fake-user-app-vr.git     -   Git repository path
+             3.docker                                               -   Git branch
+
+
+
 3. Daploy Docker image on EC2
 3.1. login to EC2 terminal
 3.2. make sure nothing is running on port 8080: lsof -i tcp:8080
@@ -179,7 +191,8 @@ i. docker stop [container id]   - stop execution of the container
 3.3.3. to test successful installation run
             sudo docker run hello-world
 3.4. deploy docker image using command line
-        sudo docker run --name fake-user-app-container vrogovoy99/fake-user-app:v1
+        sudo docker run --name fake-user-app-container -p 8081:8080 vrogovoy99/fake-user-app:v1
+            -p 8081:8080    - connect container port 8080 to virtual machine port 8081
         (to get needed permissions run : sudo su )
         sudo docker pull vrogovoy99/fake-user-app:v1
 
