@@ -129,6 +129,7 @@ g. docker logs [container id]   - container id can be found in list of container
 h. docker rm [container id]     - delete container
    docker rm -f a [container id]- force remove container (while it's running)
 i. docker stop [container id]   - stop execution of the container
+j. docker volume ls             - list registered volumes
 
 1. Create Docker package
 1.1. Create Dockerfile in application root:
@@ -254,7 +255,7 @@ i. docker stop [container id]   - stop execution of the container
         OR
         > echo "export DB_URL=jdbc:postgresql://fake-user-app.ctkkcki2gb3i.us-east-2.rds.amazonaws.com:5432/fake_user_app" >> ~ /.profile source ~/.profile
 
-4.1.2. Create environment variable in windows:
+4.1.3. Create environment variable in windows:
 
     Search for Edit System Environment variables > System Properties window / Advanced tab / click on Environment Variables
     System section > New:
@@ -264,3 +265,63 @@ i. docker stop [container id]   - stop execution of the container
         value:  postgres
         name:   DB_PASSWORD
         value:  admin
+4.1.4. Replace static values in application.properties file with environment variables
+
+        spring.datasource.url=${DB_URL}
+        spring.datasource.username=${DB_USERNAME}
+        spring.datasource.password=${DB_PASSWORD}
+
+4.1.5. to pass environment variables to container use -e and add container to network:
+
+    docker run --name fake-user-app -e DB_URL=jdbc:postgresql://my-postgres-db:5432/fake_user_app -e DB_USERNAME=postgres -e DB_PASSWORD=admin --network my-network -p 8080:8080 vrogovoy99/fake-user-app:withdb2
+        -e                      - environment variables
+        my-postgres-db          - container that hosts fake_user_app (created in section 4.2)
+        --network my-network    - add new container to the network with database container ( created in section 4.2)
+
+4.2. Network
+
+        Container my-app        container my-postgres-db
+                    network my-network
+
+4.2.1. Create network
+
+        docker network create -d bridge my-network
+            -d      - drivers
+                        bridge  - connect containers on the same host
+                        overlay - connect containers on different hosts
+                        host....
+
+4.2.2. Create database container and add it to the network
+
+        docker run --name my-postgres-db -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=admin -e POSTGRES_DB=fake_user_app --network my-network postgres
+            --name my-postgres-db           - container name
+            -e POSTGRES_USER=postgres       - environment variable
+            -e POSTGRES_PASSWORD=admin      - environment variable
+            -e POSTGRES_DB=fake_user_app    - environment variable
+            --network my-network            - add container to network
+            postgres                        - image to run
+
+4.3. Volume - replicate container volume on host server / created at the time of image run
+
+    docker run --name my-postgres-db -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=admin -e POSTGRES_DB=fake_user_app --network my-network -v my-data:/var/lib/postgresql/data postgres
+        -v my-data:/var/lib/postgresql/data     - create a volume my-data in docker and map it to data dir in container.
+
+4.4. Docker Compose file. Commands to create network, create Postgresql and app containers are stored in docker-compose.yaml file
+4.4.1. Since app start is dependent on SQL to be running, app configuration should have dependency added in docker-compose.yaml:
+
+            depends_on:
+              my-postgres-db-2:
+                condition: service_started
+
+4.4.2. In case SQL stops, we want to restart it automatically. Ass restart into docker-compose.yaml:
+
+             restart: always
+
+4.4.3. Run docker-compose.yaml
+
+        docker compose up
+
+        to stop it - Cntl_C OR
+
+        docker compose down
+
