@@ -28,8 +28,8 @@ services:
       POSTGRES_DB: fake_user_app
     networks:
       - my-network-2
-#    volumes:
-#      - my-data-2:/var/lib/postgresql/data
+    volumes:
+      - my-data-2:/var/lib/postgresql/data
     ports:
       - '5435:5432'
     restart: always
