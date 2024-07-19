@@ -63,7 +63,7 @@ Alternative:
     sudo apt install default-jre                    - (*)install java run environment
 4.2. on the first run enable port 8080
 4.2.1. aws console > instances > select instance > security tab > click on Security Groups link
-4.2.2. click on Edit inbound rules > Add Rule > Port range: 8080 > Source: Anywhere-IPv4 > Save rules
+4.2.2. click on Edit inbound rules > Add Rule > Port range: 8080 > Source: Anywhere-IPv4 (0.0.0.0/0)> Save rules
 
 4.3. install application
     java -jar fake-user-app-0.0.1-SNAPSHOT.jar      - install my application in EC2 console
@@ -132,6 +132,7 @@ i. docker stop [container id]   - stop execution of the container
 
 1. Create Docker package
 1.1. Create Dockerfile in application root:
+
         FROM adoptopenjdk/openjdk11:jre
                 adoptopenjdk    - package creator
                 openjdk11       - image name
@@ -143,6 +144,25 @@ i. docker stop [container id]   - stop execution of the container
                 target          - target folder, since dockerfile is in app root
                 fake-user-app-0.0.1-SNAPSHOT.jar - compiled app / destination file name
         ENTRYPOINT ["java", "-jar", "fake-user-app-0.0.1-SNAPSHOT.jar"] - run command up on container initialization
+        -additional -
+        ADD target/fake-user-app-0.0.1-SNAPSHOT.jar fake-user-app-0.0.1-SNAPSHOT.jar
+            works like COPY, but can copy a link like:  ADD github.com/.../fake-user-app-0.0.1-SNAPSHOT.jar fake-user-app-0.0.1-SNAPSHOT.jar
+        RUN echo helloworld
+            runs command before container is created
+            runs outside the container
+            can be used ti install additional software: RUN apt-get install curl
+        CMD echo helloworld
+            similar to RUN but
+            runs command after container is created
+            can have only one CMD in dockerfile
+                CMD can be used to override ENTRYPOINT like:
+                    ENTRYPOINT ["java", "-jar", CMD]
+                    CMD "fake-user-app-0.0.1-SNAPSHOT.jar"
+                and CMD can be overwritten by operator
+        ENV VARIABLE=VALUE  - pass environment variables to container
+        VOLUME "/somepath"  - host server path that will be retained after container destroyed and can be reused by other containers
+
+
 1.2. Build local Docker Image
 1.2.1. cd to root application (or use InteliJ terminal
 1.2.2. docker build -t fake-user-app:latest .
@@ -158,16 +178,20 @@ i. docker stop [container id]   - stop execution of the container
                 cat mypassword.txt | docker login --username vrogovoy99 --password-stdin
                 docker logout
 2.2. Create image repository on DockerHub
+
         https://hub.docker.com/ > Create repository > give Repository name, short description > Create
             image repository vrogovoy99/fake-user-app crated
+
 2.3. Rename local image to have same name as DockerHub Image
         docker tag fake-user-app:latest vrogovoy99/fake-user-app:v1
             fake-user-app:latest            - local image name tag
             vrogovoy99/fake-user-app:v1     - to be renamed to match DockerHub image
 2.4. Push created image to DockerHub. The command is generated on DockerHub web site > repositories
         docker push vrogovoy99/fake-user-app:v1
-2.5. alternative way to build image directly from GitHub using AWS server
-2.5.1. GitHub public repository.
+
+2.5. alternative way to build image directly from GitHub AWS server
+
+2.5.1. GitHub PUBLIC repository.
 2.5.1.1. Generate jar file in InteliJ, commit it to Git
 2.5.1.2. In AWS terminal run
 
@@ -175,8 +199,26 @@ i. docker stop [container id]   - stop execution of the container
              vrogovoy99/fake-user-app:from-git                      -   Image and tag name to be created
              https://github.com/vrogovoy99/fake-user-app-vr.git     -   Git repository path
              3.docker                                               -   Git branch
+        docker run -p 8080:8080 vrogovoy99/fake-user-app:from-git
+
+2.5.2. GitHub PRIVATE repository.
+2.5.2.1. Generate jar file in InteliJ, commit it to Git
+2.5.2.2 Generate Git token
+    go to GitHub.com > user profile (top right icon) > settings > developer settings >
+    personal access tokens > tokens (classic) >
+    Generate new token > Generate new token (classic):
+        Note (give token a name):   docker-demo-token
+        Expiration:                 7 days
+        repo:                       on
+        Generate token
+    Copy generated token (it will be displayed only once): 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
+    Additionally: you can click on Configure SSO, select organization and Authorize that organization to use new token
 
 
+2.5.2.3. In AWS terminal run
+
+        sudo docker build -t vrogovoy99/fake-user-app:from-git https://[Git token@]github.com/vrogovoy99/fake-user-app-vr.git#3.docker
+        sudo docker build -t vrogovoy99/fake-user-app:from-git-secure https://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@github.com/vrogovoy99/fake-user-app-vr.git#3.docker
 
 3. Daploy Docker image on EC2
 3.1. login to EC2 terminal
@@ -195,4 +237,30 @@ i. docker stop [container id]   - stop execution of the container
             -p 8081:8080    - connect container port 8080 to virtual machine port 8081
         (to get needed permissions run : sudo su )
         sudo docker pull vrogovoy99/fake-user-app:v1
+4. Docker functions
+4.1. Environment variables
+    Can be referred to from Java app properties or yaml files ad ${DB_URL}
+4.1.1. Create environment variable in unix (/bin/zsh):
 
+        > echo $SHELL
+        /bin/zsh
+        > echo "export DB_URL=jdbc:postgresql://fake-user-app.ctkkcki2gb3i.us-east-2.rds.amazonaws.com:5432/fake_user_app" >> ~ /.profile source ~/.zprofile
+
+4.1.2. Create environment variable in unix (/bin.bash):
+
+        > echo $SHELL
+        /bin/bash
+        > echo "export DB_URL=jdbc:postgresql://fake-user-app.ctkkcki2gb3i.us-east-2.rds.amazonaws.com:5432/fake_user_app" >> ~ /.bash_profile source ~/.bash_profile
+        OR
+        > echo "export DB_URL=jdbc:postgresql://fake-user-app.ctkkcki2gb3i.us-east-2.rds.amazonaws.com:5432/fake_user_app" >> ~ /.profile source ~/.profile
+
+4.1.2. Create environment variable in windows:
+
+    Search for Edit System Environment variables > System Properties window / Advanced tab / click on Environment Variables
+    System section > New:
+        name:   DB_URL
+        value:  jdbc:postgresql://localhost:5432/fake_user_app
+        name:   DB_USERNAME
+        value:  postgres
+        name:   DB_PASSWORD
+        value:  admin
