@@ -27,7 +27,7 @@ jobs:
             - .
   test:
     machine: true
-    working_directory: ~/fake-usefr-app
+    working_directory: ~/fake-user-app
     steps:
       - attach_workspace:
           at: ~/fake-user-app
