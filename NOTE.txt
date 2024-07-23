@@ -183,3 +183,11 @@ i. docker stop [container id]   - stop execution of the container
         (to get needed permissions run : sudo su )
         sudo docker pull vrogovoy99/fake-user-app:v1
 
+
+Replace master with branch:
+    git checkout master
+    git pull
+    git checkout seotweaks
+    git merge -s ours master
+    git checkout master
+    git merge seotweaks
