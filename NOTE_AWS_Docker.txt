@@ -325,3 +325,14 @@ j. docker volume ls             - list registered volumes
 
         docker compose down
 
+
+
+
+
+Replace master with branch:
+    git checkout master
+    git pull
+    git checkout seotweaks
+    git merge -s ours master
+    git checkout master
+    git merge seotweaks
