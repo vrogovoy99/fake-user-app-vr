@@ -45,7 +45,7 @@ Alternative:
     Open Git Bash > cd Downl* > chmod 400 fake-user-app-key.pem
 3.3. run the upload command from download (where pem file is) using GitBash
 
-    scp -1 "[key.pem]" [jar location] ubuntu@[EC2 server]:[target destination]
+    scp -i "[key.pem]" [jar location] ubuntu@[EC2 server]:[target destination]
 
         [key.pem] - fake-user-app-key.pem in Downloads folder
         [jar location] - InteliJ > Project > target > .jar > Copy Path > Absolute
@@ -53,6 +53,7 @@ Alternative:
         [target destination] : /home/ubuntu/fake-user-app
 
     scp -i "fake-user-app-key.pem" /c/Users/Human/IdeaProjects/spring/fake-user-app/fake-user-app-vr/target/fake-user-app-0.0.1-SNAPSHOT.jar ubuntu@ec2-3-135-62-25.us-east-2.compute.amazonaws.com:/home/ubuntu/fake-user-app
+    scp -i "fake-user-app-key.pem" C:\Users\Human\IdeaProjects\spring\fake-user-app\fake-user-app-vr\target\fake-user-app-0.0.2-WITHDB.jar ubuntu@ec2-54-166-15-176.compute-1.amazonaws.com:/home/ubuntu/fake-user-app
 
 3.4. go to aws terminal (Instances / connect / EC2 Instance Connect / Connect)
     confirm that file was uploaded to fake-user-app folder.
@@ -103,7 +104,7 @@ Alternative:
 6.1. delete jar file on EC2 via terminal
 6.2. InteliJ terminal (use Ctrl+Enter):
         mvn clean
-        mvn install -DskipTests      -   not to run tests, since app is configured to run on server only
+        mvn install -DskipTests      -   not lsto run tests, since app is configured to run on server only
 6.3. copy jar to EC2 repeating step 3.3.
      scp -i "fake-user-app-key.pem" /c/Users/Human/IdeaProjects/spring/fake-user-app/fake-user-app-vr/target/fake-user-app-0.0.1-SNAPSHOT.jar ubuntu@ec2-3-135-62-25.us-east-2.compute.amazonaws.com:/home/ubuntu/fake-user-app
 6.4. run application on EC2 server terminal: java -jar fake-user-app-0.0.1-SNAPSHOT.jar
@@ -187,10 +188,16 @@ j. docker volume ls             - list registered volumes
         docker tag fake-user-app:latest vrogovoy99/fake-user-app:v1
             fake-user-app:latest            - local image name tag
             vrogovoy99/fake-user-app:v1     - to be renamed to match DockerHub image
+
+       ~temp: docker build -t vrogovoy99/fake-user-app:WITHDB .
+
+
 2.4. Push created image to DockerHub. The command is generated on DockerHub web site > repositories
-        docker push vrogovoy99/fake-user-app:v1
+        docker push vrogovoy99/fake-user-app:WITHDB
 
 2.5. alternative way to build image directly from GitHub AWS server
+
+NOTE jar file has to be explicitly included in GIT and pushed to the server!
 
 2.5.1. GitHub PUBLIC repository.
 2.5.1.1. Generate jar file in InteliJ, commit it to Git
@@ -233,8 +240,9 @@ j. docker volume ls             - list registered volumes
         run that code in EC2 terminal
 3.3.3. to test successful installation run
             sudo docker run hello-world
+
 3.4. deploy docker image using command line
-        sudo docker run --name fake-user-app-container -p 8081:8080 vrogovoy99/fake-user-app:v1
+        sudo docker run --name fake-user-app-withdb -p 8080:8080 vrogovoy99/fake-user-app:WITHDB
             -p 8081:8080    - connect container port 8080 to virtual machine port 8081
         (to get needed permissions run : sudo su )
         sudo docker pull vrogovoy99/fake-user-app:v1
@@ -251,9 +259,9 @@ j. docker volume ls             - list registered volumes
 
         > echo $SHELL
         /bin/bash
-        > echo "export DB_URL=jdbc:postgresql://fake-user-app.ctkkcki2gb3i.us-east-2.rds.amazonaws.com:5432/fake_user_app" >> ~ /.bash_profile source ~/.bash_profile
+        > echo "export DB_URL=jdbc:postgresql://fake-user-app.cpwaw00267mh.us-east-1.rds.amazonaws.com:5432/fake_user_app" >> ~ /.bash_profile source ~/.bash_profile
         OR
-        > echo "export DB_URL=jdbc:postgresql://fake-user-app.ctkkcki2gb3i.us-east-2.rds.amazonaws.com:5432/fake_user_app" >> ~ /.profile source ~/.profile
+        > echo "export DB_URL=jdbc:postgresql://fake-user-app.cpwaw00267mh.us-east-1.rds.amazonaws.com:5432/fake_user_app" >> ~ /.profile source ~/.profile
 
 4.1.3. Create environment variable in windows:
 

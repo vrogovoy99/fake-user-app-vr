@@ -31,10 +31,10 @@ services:
     volumes:
       - my-data-2:/var/lib/postgresql/data
     ports:
-      - '5435:5432'
+      - '5432:5432'
     restart: always
   fake-user-app-2:
-    image: vrogovoy99/fake-user-app:withdb2
+    image: vrogovoy99/fake-user-app:withdb
     container_name: fake-user-app-2
     environment:
       DB_URL: jdbc:postgresql://my-postgres-db-2:5432/fake_user_app
