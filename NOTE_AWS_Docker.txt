@@ -333,6 +333,11 @@ NOTE jar file has to be explicitly included in GIT and pushed to the server!
 
         docker compose down
 
+5. move sensitive info from config.yml to CircleCi > Project Settings > Environment Variables
+
+    ECR_SVR = 637423465023.dkr.ecr.us-east-1.amazonaws.com
+    EC2_SVR = ec2-54-166-15-176.compute-1.amazonaws.com
+    EC2_USR = ubuntu
 
 
 
